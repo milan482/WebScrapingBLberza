@@ -14,7 +14,7 @@ firefox_options.headless = True
 driver = webdriver.Firefox(service=service, options=firefox_options)
 
 # Ovde menjaš ili dodaješ druge kompanije
-codes = ["AERD"]
+codes = ["BMNT"]
 
 def clean_number(number_text, column_name):
     # Ostavlja kolone AOP i Opis nepromenjene 
@@ -40,7 +40,7 @@ report_names = {
 
 for code in codes:
     for type_id in range(1, 4):
-        for year in range(2022, 2024):  # Ovde menjaš godine 
+        for year in range(2021, 2024):  # Ovde menjaš godine 
             url = f'https://www.blberza.com/Pages/FinRepBalance.aspx?code={code}&type={type_id}&year={year}&semiannual=0'
             driver.get(url)
 
@@ -88,19 +88,25 @@ driver.quit()
 
 # ------------------- Pisanje podatak u Excel -------------------------
 
-with pd.ExcelWriter('Finansijski_izvjestaji.xlsx', engine='openpyxl') as writer:
-    for type_id in range(1, 4):
-        report_name = report_names.get(type_id, f"Tip_{type_id}")
-        
-        if type_id == 1:
-            columns = ["AOP", "Opis", "Bruto tekuća", "Ispravka vrijednosti", "Neto tekuća", "Kompanija", "Godina"]
-        else:
-            columns = ["AOP", "Opis", "Bruto tekuća", "Kompanija", "Godina"]
+file_names = {
+    1: "bilans_stanja.xlsx",
+    2: "bilans_uspeha.xlsx",
+    3: "bilans_novcanih_tokova.xlsx"
+}
 
-        if type_data[type_id]:
-            df = pd.DataFrame(type_data[type_id], columns=columns)
+for type_id in range(1, 4):
+    report_name = report_names.get(type_id, f"Tip_{type_id}")
+    file_name = file_names.get(type_id, f"report_{type_id}.xlsx")
 
-            df.to_excel(writer, sheet_name=report_name, index=False)
-            print(f"Podatci za {report_name} su sačuvani u Excel sheet '{report_name}'.")
-        else:
-            print(f"Nema podataka za {report_name}.")
+    if type_id == 1:
+        columns = ["AOP", "Opis", "Bruto tekuća", "Ispravka vrijednosti", "Neto tekuća", "Kompanija", "Godina"]
+    else:
+        columns = ["AOP", "Opis", "Bruto tekuća", "Kompanija", "Godina"]
+
+    if type_data[type_id]:
+        df = pd.DataFrame(type_data[type_id], columns=columns)
+
+        df.to_excel(file_name, index=False)
+        print(f"Podatci za {report_name} su sačuvani u Excel fajl '{file_name}'.")
+    else:
+        print(f"Nema podataka za {report_name}.")
